@@ -1,5 +1,12 @@
 'use client';
 
+/**
+ * SECURITY NOTICE:
+ * This provider is for LOCAL DESKTOP USE ONLY.
+ * It bypasses real authentication to support offline single-user mode.
+ * DO NOT USE IN WEB DEPLOYMENTS.
+ */
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 // Mock User Shape
