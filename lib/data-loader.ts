@@ -33,28 +33,35 @@ export async function listFiles(patientId: string): Promise<FileMeta[]> {
     }
 }
 
+import { FormalDataset } from '@/lib/types';
+
+// ... (existing imports)
+
 /**
  * Loads the most recent Excel dataset for a patient from local storage.
- * If no patientId is provided, it returns an empty array as we enforce patient context in Desktop.
+ * If no patientId is provided, it returns an empty dataset object.
  */
-export async function loadDataset(patientId?: string): Promise<any[]> {
+export async function loadDataset(patientId?: string): Promise<FormalDataset> {
+    const emptyResult: FormalDataset = { FormalDataset: [], patientName: '' };
     try {
         if (!patientId) {
             console.warn("[DataLoader] No patientId provided. Returning empty dataset.");
-            return [];
+            return emptyResult;
         }
 
         const files = await listFiles(patientId);
         if (files.length === 0) {
-            return [];
+            return emptyResult;
         }
 
-        // Return empty array as placeholder.
-        // The actual spreadsheet parsing logic is handed off to the frontend/ingestion agent in this architecture.
-        // This function exists mainly to satisfy the API contract of /api/data/current
-        return [];
+        // Return placeholder object matching FormalDataset interface
+        // Real parsing would happen here or in ingestion service
+        return {
+            FormalDataset: [],
+            patientName: patientId // fallback logic
+        };
     } catch (error) {
         console.error("Local loadDataset error:", error);
-        return [];
+        return emptyResult;
     }
 }

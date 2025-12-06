@@ -10,9 +10,7 @@ interface PageProps {
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
     const params = await searchParams;
     const dataset = await loadDataset(params.patientId);
-    const title = dataset.patientName
-        ? `${dataset.patientName}'s Patient Journey`
-        : 'Patient Journey';
+    const title = 'Patient Journey';
 
     return {
         title: title,
