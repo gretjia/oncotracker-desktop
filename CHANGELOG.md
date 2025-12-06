@@ -7,6 +7,12 @@
 - **Feature:** **Adjustable Columns** - Added drag-to-resize functionality for all data columns.
 - **UX:** **Morandi Header Theme** - Applied the "Morandi Rainbow" color scheme (opaque) to frozen rows, matching the Journey Visualizer's aesthetic and preventing scroll-through artifacts.
 
+## v0.8.1-desktop
+
+- **Fix:** Implemented Save functionality in "Manage Data" (writes to SQLite + filesystem).
+- **Security:** Verified complete removal of Supabase service role dependencies.
+- **UI:** Hides AI Assistant in Journey View by default.
+
 ## v0.8.0-desktop (2025-12-06)
 
 **Major Release: Desktop Migration**

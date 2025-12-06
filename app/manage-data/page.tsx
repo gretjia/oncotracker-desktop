@@ -119,11 +119,23 @@ function ManageDataContent() {
         }
     };
 
-    const handleSave = () => {
-        console.log("Saving data...", rows);
-        alert("Save functionality coming soon (requires backend API update). Data is logged to console.");
-        // TODO: Implement API call to save. The current uploadData action only handles files.
-        // We need an action or API route to save the JSON directly.
+    const handleSave = async () => {
+        if (!patientId) return;
+        setIsLoading(true);
+        try {
+            const { savePatientDataset } = await import('@/app/actions/patient-actions');
+            const result = await savePatientDataset(patientId, rows);
+            if (result.success) {
+                alert("Data saved successfully!");
+            } else {
+                alert("Save failed: " + result.error);
+            }
+        } catch (err: any) {
+            console.error("Save error:", err);
+            alert("Save error: " + err.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

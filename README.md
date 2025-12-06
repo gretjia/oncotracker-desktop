@@ -1,8 +1,7 @@
-# OncoTracker Desktop
+# OncoTracker Desktop (Local-First)
 
-**Local-First, Privacy-Focused Patient Journey Visualization.**
-
-OncoTracker Desktop is a standalone Electron application designed for offline use. It combines the power of Next.js 15 with the privacy of a local SQLite database.
+![Version](https://img.shields.io/badge/version-0.8.1-blue.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg) ![Status](https://img.shields.io/badge/status-stable-success.svg)
+ Electron application designed for offline use. It combines the power of Next.js 15 with the privacy of a local SQLite database.
 
 ## Features
 

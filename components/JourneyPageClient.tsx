@@ -13,6 +13,9 @@ interface JourneyPageClientProps {
     patientId?: string;
 }
 
+// Feature flag to control AI Assistant visibility
+const SHOW_AI_ASSISTANT = false;
+
 export function JourneyPageClient({ dataset, initialSettings, patientId }: JourneyPageClientProps) {
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [highlightedMetric, setHighlightedMetric] = useState<string | null>(null);
@@ -29,7 +32,7 @@ export function JourneyPageClient({ dataset, initialSettings, patientId }: Journ
                 />
 
                 {/* Floating Toggle Button */}
-                {!isChatOpen && (
+                {SHOW_AI_ASSISTANT && !isChatOpen && (
                     <Button
                         onClick={() => setIsChatOpen(true)}
                         className="absolute bottom-6 right-6 rounded-full shadow-xl h-12 px-4 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 z-40 animate-in fade-in zoom-in duration-300"
@@ -42,7 +45,7 @@ export function JourneyPageClient({ dataset, initialSettings, patientId }: Journ
             </div>
 
             {/* Chat Sidebar */}
-            {isChatOpen && (
+            {SHOW_AI_ASSISTANT && isChatOpen && (
                 <div className="fixed inset-0 z-50 w-full md:relative md:w-[350px] md:inset-auto h-full bg-white border-l shadow-xl transition-all duration-300 ease-in-out">
                     <Button
                         variant="ghost"

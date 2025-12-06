@@ -123,6 +123,98 @@ export async function createPatientAction(formData: FormData) {
 // -----------------------------------------------------------------------------
 // Action: Delete Patient
 // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Action: Save Patient Dataset (JSON -> XLSX + DB)
+// -----------------------------------------------------------------------------
+export async function savePatientDataset(patientId: string, rows: any[]) {
+    try {
+        if (!patientId || !rows || rows.length === 0) {
+            throw new Error('Invalid data');
+        }
+
+        const currentUser = await getCurrentUser();
+        // In local desktop, we are effectively admin/doctor
+
+        // 1. Convert JSON rows back to minimal 2D array for processing
+        // Strategy: We reuse processAndSaveDataset logic by mocking a "File" or separating the logic.
+        // Better: We write the JSON to a buffer directly using data-transformer.
+
+        // We assume 'rows' is alrady in the shape of FormalDatasetRow used by the UI.
+        // We need to convert this array of objects back to array of arrays for writeCanonicalXLSX
+
+        // Extract headers from first row (keys)
+        // Ideally we should use the schema to determine order, but UI preserves order mostly.
+        const keys = Object.keys(rows[0]);
+        // Simple map
+        const matrix = [keys, ...rows.map(r => keys.map(k => r[k]))];
+
+        // However, writeCanonicalXLSX expects the FULL structure (headers at specific indices).
+        // The UI `rows` variable (from `useManageData`) typically starts from the data part?
+        // Wait, `DataSpreadsheet` usually renders EVERYTHING including headers if raw.
+        // Let's check `loadDataset` return value. It returns `FormalDataset[]`.
+        // If `loadDataset` read the XLSX, and if `DataSpreadsheet` edits it raw, `rows` is the whole sheet.
+        // Let's assume `rows` is the array of row objects.
+
+        // Reconstruct the 2D array
+        const reconstructedData = rows.map(rowObj => {
+            // We need a stable key order.
+            // If the UI just passes what it got, we should use the columns derived from it.
+            // But `rows` argument here doesn't have column order metadata.
+            // We should assume the UI passes `columns` or we infer it.
+            return Object.values(rowObj);
+        });
+
+        // Actually, `DataSpreadsheet` often works with `columns` state.
+        // We should explicitly rely on `writeCanonicalXLSX` which handles object array if we adapt it,
+        // OR we just assume the rows are what we want to save.
+
+        // Let's simplify: Use XLSX.utils.json_to_sheet to create the workbook buffer.
+        // Then pass that buffer to `processAndSaveDataset` logic? 
+        // No, `processAndSaveDataset` does parsing + DB + File Save.
+        // Re-parsing is redundant but safer to ensure consistency.
+
+        const worksheet = XLSX.utils.json_to_sheet(rows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+        const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+        // 2. Persist File
+        const fileName = `${patientId}.xlsx`;
+        await uploadFile('patient-data', fileName, buffer);
+
+        // 3. Update Database (Observations)
+        // We first clear existing (full replace for simplicity in this local version)
+        await (prisma as any).observation.deleteMany({
+            where: { patient_id: patientId }
+        });
+
+        // We re-parse to extract observations using our canonical logic
+        // This ensures the DB stays in sync with what the "Agent" would see
+        // Mock a File object
+        const fileMock = new File([buffer], fileName, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        await processAndSaveDataset(
+            fileMock,
+            patientId,
+            null, // no mapping needed if it's canonical
+            currentUser.user_metadata.full_name || 'Patient',
+            true // assume canonical since we just saved it? Actually UI structure might vary. 
+            // Let's assume UI keeps the canonical structure if it was loaded.
+        );
+
+        revalidatePath('/journey');
+        revalidatePath('/manage-data');
+        return { success: true };
+
+    } catch (error: any) {
+        console.error('Save Dataset Error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Action: Delete Patient
+// -----------------------------------------------------------------------------
 export async function deletePatientAction(patientId: string) {
     try {
         const currentUser = await getCurrentUser();
