@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Mirrors public.profiles (extends auth.users in Supabase, but here it's our main User table)
+model Profile {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  role            String   @default("patient") // 'patient' | 'doctor' | 'supervisor'
+  is_approved     Boolean  @default(false)
+  full_name       String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now()) @updatedAt
+
+  // Relations
+  doctorProfile   Doctor?
+  patientProfile  Patient?
+
+  @@map("profiles")
+}
+
+// Mirrors public.doctors
+model Doctor {
+  id              String   @id // FK to Profile.id
+  specialty       String?
+  license_number  String?
+  created_at      DateTime @default(now())
+
+  // Relations
+  profile         Profile  @relation(fields: [id], references: [id], onDelete: Cascade)
+  assignedPatients Patient[]
+
+  @@map("doctors")
+}
+
+// Mirrors public.patients
+model Patient {
+  id                 String   @id // FK to Profile.id
+  mrn                String?  @unique
+  dob                DateTime?
+  gender             String?
+  assigned_doctor_id String?
+  created_at         DateTime @default(now())
+
+  // Relations
+  profile            Profile  @relation(fields: [id], references: [id], onDelete: Cascade)
+  assignedDoctor     Doctor?  @relation(fields: [assigned_doctor_id], references: [id])
+  
+  settings           PatientSettings[]
+  observations       Observation[]
+
+  @@map("patients")
+}
+
+// Mirrors public.patient_journey_settings
+model PatientSettings {
+  id         String   @id @default(uuid())
+  user_id    String
+  patient_id String
+  settings   String   @default("{}") // SQLite doesn't support JSONB, stores as string
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  // Relations
+  patient    Patient  @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  // user relation is implicit via user_id, but since User table is Profile, we can map it if needed.
+  // Ideally, user_id refers to the viewer (Doctor or Patient themselves).
+  // For SQLite local single-user mode, user_id might be 'local-admin' or similar.
+
+  @@unique([user_id, patient_id])
+  @@map("patient_journey_settings")
+}
+
+// Mirrors public.observations
+model Observation {
+  id                 String   @id @default(uuid())
+  patient_id         String
+  effective_datetime DateTime
+  category           String?
+  code               String
+  code_display       String
+  status             String?
+  value_quantity     Float?
+  value_string       String?
+  value_unit         String?
+  interpretation     String?
+  created_at         DateTime @default(now())
+
+  patient            Patient  @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+
+  @@map("observations")
+}

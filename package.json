@@ -1,0 +1,93 @@
+{
+  "name": "oncotracker-next",
+  "version": "0.7.5",
+  "private": true,
+  "main": "dist-electron/background.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "build:main": "tsc main/background.ts --outDir dist-electron --module commonjs --target es6 --esModuleInterop --skipLibCheck --noEmit false",
+    "dev:electron": "npm run build && npm run build:main && electron .",
+    "build:electron": "npm run build && npm run build:main && electron-builder"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.74",
+    "@ai-sdk/react": "^2.0.106",
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-scroll-area": "^1.2.10",
+    "@radix-ui/react-slider": "^1.3.6",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-switch": "^1.2.6",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.86.0",
+    "@types/pg": "^8.15.6",
+    "@types/pinyin": "^2.10.2",
+    "ai": "^5.0.106",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "d3": "^7.9.0",
+    "dotenv": "^17.2.3",
+    "exceljs": "^4.4.0",
+    "lucide-react": "^0.555.0",
+    "next": "15.0.3",
+    "openai": "^6.9.1",
+    "pg": "^8.16.3",
+    "pinyin": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^3.4.0",
+    "ts-node": "^10.9.2",
+    "use-debounce": "^10.0.6",
+    "xlsx": "^0.18.5",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@prisma/client": "^5.22.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/d3": "^7.4.3",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/wait-on": "^5.3.4",
+    "baseline-browser-mapping": "^2.9.4",
+    "concurrently": "^9.2.1",
+    "electron": "^39.2.6",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9",
+    "eslint-config-next": "15.0.3",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^4",
+    "tw-animate-css": "^1.4.0",
+    "typescript": "^5",
+    "wait-on": "^9.0.3"
+  },
+  "build": {
+    "appId": "com.oncotracker.local",
+    "productName": "OncoTracker Local",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "dist-electron/**/*",
+      ".next/standalone/**/*",
+      "public/**/*",
+      "package.json",
+      "prisma/schema.prisma"
+    ],
+    "extraResources": [
+      "prisma/dev.db"
+    ],
+    "mac": {
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
