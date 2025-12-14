@@ -10,7 +10,10 @@
     "lint": "eslint",
     "build:main": "tsc main/background.ts --outDir dist-electron --module commonjs --target es6 --esModuleInterop --skipLibCheck --noEmit false",
     "dev:electron": "npm run build && npm run build:main && electron .",
-    "build:electron": "npm run build && npm run build:main && electron-builder"
+    "build:electron": "npm run build && npm run copy-static && npm run build:main && electron-builder",
+    "build:win": "npm run build && npm run copy-static && npm run install-sharp-win && npm run build:main && electron-builder --win --x64",
+    "copy-static": "node scripts/copy-static.js",
+    "install-sharp-win": "node scripts/install-sharp-win.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.74",
@@ -73,9 +76,13 @@
       "dist-electron/**/*",
       ".next/standalone/**/*",
       "public/**/*",
-      "package.json",
-      "prisma/schema.prisma"
+      "prisma/schema.prisma",
+      "!node_modules",
+      "!.next/cache",
+      "!.next/server",
+      "!**/*.map"
     ],
+    "asar": false,
     "extraResources": [
       "prisma/dev.db"
     ],
@@ -83,11 +90,15 @@
       "target": "dmg"
     },
     "win": {
-      "target": "nsis"
+      "target": {
+        "target": "portable",
+        "arch": [
+          "x64"
+        ]
+      }
     },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+    "portable": {
+      "artifactName": "${productName}-${version}-Portable.${ext}"
     }
   }
 }
